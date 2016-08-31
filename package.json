@@ -1,0 +1,17 @@
+{
+  "name": "zendesk-search",
+  "version": "1.0.0",
+  "description": "A simple JavaScript search application",
+  "main": "zendeskSearch.js",
+  "scripts": {
+    "test": "mocha --recursive",
+    "start": "node zendeskSearch.js"
+  },
+  "keywords": ["Zendesk", "Code challenge", "Hire Matt"],
+  "author": "Matt Szabo",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2"
+  }
+}

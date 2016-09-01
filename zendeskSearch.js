@@ -1,15 +1,15 @@
-var organizations = require('./data/organizations.json');
-var tickets = require('./data/tickets.json');
-var users = require('./data/users.json');
+const organizations = require('./data/organizations.json');
+const tickets = require('./data/tickets.json');
+const users = require('./data/users.json');
 
-var searchCriteria = 'ecratic.com';
+const Search = require('./src/crawler');
+const search = new Search(organizations, tickets, users);
 
-var Crawler = require('./src/crawler');
-var crawler = new Crawler(organizations, tickets, users);
+//menu logic
+const dataset = 'organizations'
+const key = '_id'
+const searchCriteria = 101
 
-var menu = require('./src/menu');
-
-// menu.mainMenu();
-var results = crawler.find(searchCriteria);
+const results = search.find(dataset, key, searchCriteria);
 
 console.log(results);

@@ -1,48 +1,65 @@
-var chai = require('chai');
-var expect = chai.expect;
-
-var organizations = require('../data/organizations.json');
-
-describe('Search logic', () => {
-  var Crawler = require('../src/crawler');
-  var crawler = new Crawler(organizations);
-
-  describe('Organization data', () => {
-
-    const org = {
-      _id: 101,
-      url: 'http://initech.zendesk.com/api/v2/organizations/101.json',
-      external_id: '9270ed79-35eb-4a38-a46f-35725197ea8d',
-      name: 'Enthaze',
-      domain_names: [ 'kage.com', 'ecratic.com', 'endipin.com', 'zentix.com' ],
-      created_at: '2016-05-21T11:10:28 -10:00',
-      details: 'MegaCorp',
-      shared_tickets: false,
-      tags: [ 'Fulton', 'West', 'Rodriguez', 'Farley' ]
-    };
-
-    it('can be found by searching on each attribute', () => {
-
-      for (var elem in org) {
-        let results;
-        let searchCriteria = org[elem];
-
-        if (searchCriteria instanceof Array) {
-          let resultsList = [];
-          for(var i = 0; i < searchCriteria.length; i++) {
-            // resultsList = resultsList.concat(crawler.find(searchCriteria[i]));
-            expect(crawler.find(searchCriteria[i])[0]).to.deep.equal(org);
-          };
-          // for(var i = 0; i < resultsList.length; i++) {
-          //   expect(resultsList[i]).to.deep.equal(org);
-          // };
-        } else {
-          results = crawler.find(searchCriteria);
-          expect(results[0]).to.deep.equal(org);
-        }
-      }
-
-    });
-
-  });
-});
+// const chai = require('chai');
+// const expect = chai.expect;
+//
+// const organizations = require('../data/organizations.json');
+// const tickets = require('../data/tickets.json');
+// const users = require('../data/users.json');
+//
+// describe('Zendesk Search application: ', () => {
+//   const Crawler = require('../src/crawler');
+//   const crawler = new Crawler(organizations, tickets, users);
+//
+//   describe('Organization data', () => {
+//
+//     it('each has a unique _id field', () => {
+//       for(let i = 0; i < organizations.length; i++) {
+//         const searchCriteria = organizations[i]['_id'];
+//         const result = crawler.find('organizations', searchCriteria);
+//         expect(result.length).to.equal(1);
+//       }
+//     });
+//
+//     it('can be found by searching on each attribute', () => {
+//       const org = organizations[0];
+//       let expectedResult = org;
+//       expectedResult.employees = [['Loraine Pittman',5], ['Francis Bailey',23], ['Haley Farmer',27], ['Herrera Norman',29]];
+//
+//       // console.log(org);
+//       for (let elem in org) {
+//         let results;
+//         let searchCriteria = org[elem];
+//
+//         if (searchCriteria instanceof Array) {
+//           for(let i = 0; i < searchCriteria.length; i++) {
+//             results = crawler.find(searchCriteria[i]);
+//             log(results);
+//             expect(results[0]).to.deep.equal(expectedResult);
+//           };
+//         } else {
+//           results = crawler.find(searchCriteria);
+//           console.log('yo', searchCriteria);
+//           expect(results[0]).to.deep.equal(expectedResult);
+//         }
+//       }
+//     });
+//   });
+//
+//   // describe('Tickets Data', () => {
+//   //   it('each has a unique _id field', () => {
+//   //     for(let i = 0; i < tickets.length; i++) {
+//   //       console.log("i", crawler.find(tickets[i]['_id']));
+//   //       expect(crawler.find(tickets[i]['_id']).length).to.equal(1);
+//   //     }
+//   //   })
+//   //   const ticket = tickets[0];
+//   //   // it('')
+//   // });
+//   //
+//   // describe('Search logic', () => {
+//   //
+//   //   it('reports if search term is not found', () => {
+//   //     expect(crawler.find(new Date())).to.equal('NOT_FOUND')
+//   //   });
+//   // });
+//
+// });

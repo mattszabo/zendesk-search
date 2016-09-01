@@ -34,22 +34,12 @@ describe('Search logic ', () => {
     expect(result[0]).to.equal('Zero search results');
   });
 
-  it('finds an organization by ID', () => {
+  it('finds data by ID', () => {
     const org = organizations[0];
     const searchCriteria = org['_id']
 
     const result = search.find(datasetLabel, key, searchCriteria);
     expect(result[0]).to.deep.equal(org);
-  });
-
-  it('finds a unique id for all organization data', () => {
-    for(let i = 0; i < organizations.length; i++) {
-      const org = organizations[i];
-      const searchCriteria = org['_id']
-
-      const result = search.find(datasetLabel, key, searchCriteria);
-      expect(result.length).to.equal(1);
-    }
   });
 
   it('finds an organization using a single tag', () => {
@@ -62,5 +52,12 @@ describe('Search logic ', () => {
       expect(result[0]).to.deep.equal(org);
     }
   });
+
+  const userDatasetLabel = 'users';
+  it('finds multiple results', () => {
+    result = search.find(userDatasetLabel, 'organization_id', 101);
+    // console.log('RES', result);
+    expect(result.length).to.equal(4);
+  })
 
 });

@@ -7,11 +7,19 @@
     "test": "mocha --recursive",
     "start": "node zendeskSearch.js"
   },
-  "keywords": ["Zendesk", "Code challenge", "Hire Matt"],
+  "keywords": [
+    "Zendesk",
+    "Code challenge",
+    "Hire Matt :)"
+  ],
   "author": "Matt Szabo",
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^3.0.2"
+  },
+  "dependencies": {
+    "inquirer": "^1.1.3",
+    "readline-sync": "^1.4.4"
   }
 }

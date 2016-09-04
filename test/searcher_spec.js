@@ -17,7 +17,7 @@ describe('Searcher logic', () => {
     expect(emptyDataset.isEmpty()).to.equal(true);
   })
 
-  it('finds a single organization record based on _id', () => {
+  it('finds a single record based on _id', () => {
     // make sure we get a copy of org[0] and not just a reference in case
     // we accidentally mutate the data and ruin the integrity of the test
     const expectedResult = JSON.parse(JSON.stringify(organizations[0]));

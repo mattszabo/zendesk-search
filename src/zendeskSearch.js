@@ -16,11 +16,9 @@ function ZendeskSearch() {
 
   this.run = function() {
     clear();
-
     console.log('====================================');
     console.log('     Welcome to Zendesk Search™');
     console.log('====================================\n');
-
     waitForKeyPress();
     clear();
 
@@ -32,17 +30,13 @@ function ZendeskSearch() {
       console.log(' 0) Exit');
 
       let option = read.question(': ');
-
       switch(option) {
         case '1':
           validSelection = true;
           const datasetLabel = getDatasetLabel();
-          // const dataset = getDatasetFromLabel(datasetLabel);
           const field = getFieldToSearchOn(datasetLabel);
           const searchValue = getValueToSeachOn(datasetLabel, field);
           const results = dataCrawl(datasetLabel, field, searchValue);
-          // console.log('RESULTS in RUN', results);
-          // waitForKeyPress();
           displaySearchResults(datasetLabel, field, searchValue, results);
           waitForKeyPress('Press any key to return to the main menu.');
           clear();
@@ -62,15 +56,7 @@ function ZendeskSearch() {
     switch (datasetLabel) {
       case 'organization':
         const orgList = results[0];
-        // console.log('YOOOOOO', resu);
-        // waitForKeyPress();
         console.log(orgList.length + ' organization(s)'.green + ' found:');
-        // displaySingleResult(org);
-        // const users = results[1];
-        // console.log('\nUsers'.green);
-        // for(let i = 0; i < users.length; i++) {
-        //   console.log('  - ' + users[i].name + ' (id: ' + users[i]._id + ')');
-        // }
         for(let i = 0; i < orgList.length; i++) {
           let org = orgList[i];
           let n = i + 1;
@@ -101,12 +87,9 @@ function ZendeskSearch() {
       default:
         exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');
     }
-    // console.log(results);
-
   }
 
   displaySingleResult = function(result) {
-    // console.log(result);
     for(key in result) {
       value = result[key];
       if(value instanceof Array) {
@@ -126,14 +109,9 @@ function ZendeskSearch() {
     switch(datasetLabel) {
       case 'organization':
         const orgResults = orgSearcher.find(field, searchValue);
-        // results.push(orgResult);
-        // const userResult = userSearcher.find('organization_id', orgResult[0]['_id']);
-        // results.push(userResult)
         for(let i = 0; i < orgResults.length; i++) {
           org = orgResults[i];
           let users = userSearcher.find('organization_id', org['_id']);
-          // console.log('YOOOOOOOOOO', users);
-          // waitForKeyPress();
           let orgUsers = [];
           if(users === 'No data found') {
             orgUsers = 'No users found for the organization';
@@ -149,10 +127,9 @@ function ZendeskSearch() {
         break;
       case 'user':
         const userResults = userSearcher.find(field, searchValue);
+
         for(let i = 0; i < userResults.length; i++) {
           user = userResults[i];
-          // console.log('HEEYYY', user);
-          // waitForKeyPress();
           let assignedTickets = ticketSearcher.find('assignee_id', user['_id']);
           let userAssignedTickets = [];
           if(assignedTickets === 'No data found') {
@@ -174,7 +151,6 @@ function ZendeskSearch() {
             }
           }
           user.submittedTickets = userSubmittedTickets;
-
         }
         results.push(userResults);
         break;
@@ -184,7 +160,6 @@ function ZendeskSearch() {
       default:
         exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');
     }
-
     return results;
   }
 
@@ -247,19 +222,6 @@ function ZendeskSearch() {
     }
   }
 
-  // getDataSearcherFromLabel = function(datasetLabel) {
-  //   switch(datasetLabel) {
-  //     case 'organization':
-  //       return orgSearcher;
-  //     case 'user':
-  //       return userSearcher;
-  //     case 'ticket':
-  //       return ticketSearcher;
-  //     default:
-  //       exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetToSearchOn method.\nNow exitting application.');
-  //   }
-  // }
-
   displayFieldsForDataset = function(datasetLabel, fieldList) {
     clear();
     console.log(header);
@@ -312,7 +274,6 @@ function ZendeskSearch() {
     message = message || 'Press any key to continue... ';
     read.question(message);
   }
-
 };
 
 module.exports = ZendeskSearch;

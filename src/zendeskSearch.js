@@ -24,28 +24,13 @@ function ZendeskSearch() {
 
     let validSearch = false;
     while(true) {
-      console.log(header);
-      console.log('Please select one of the following options:');
-      console.log(' 1) Zendesk Search');
-      console.log(' 0) Exit');
-
-      let option = read.question(': ');
-      switch(option) {
-        case '1':
-          validSelection = true;
-          const datasetLabel = getDatasetLabel();
-          const field = getFieldToSearchOn(datasetLabel);
-          const searchValue = getValueToSeachOn(datasetLabel, field);
-          const results = dataCrawl(datasetLabel, field, searchValue);
-          displaySearchResults(datasetLabel, field, searchValue, results);
-          waitForKeyPress('Press any key to return to the main menu.');
-          clear();
-          break;
-        case '0':
-          exit();
-        default:
-          handleInvalidInput(option);
-      }
+      const datasetLabel = getDatasetLabel();
+      const field = getFieldToSearchOn(datasetLabel);
+      const searchValue = getValueToSeachOn(datasetLabel, field);
+      const results = dataCrawl(datasetLabel, field, searchValue);
+      displaySearchResults(datasetLabel, field, searchValue, results);
+      waitForKeyPress('Press any key to return to the main menu.');
+      clear();
     }
   }
 
@@ -53,39 +38,18 @@ function ZendeskSearch() {
     clear();
     console.log(header);
     console.log('Searching ' + datasetLabel.green + ' for ' + field.green + ' with a value of ' + searchValue.green +'\n');
-    switch (datasetLabel) {
-      case 'organization':
-        const orgList = results[0];
-        console.log(orgList.length + ' organization(s)'.green + ' found:');
-        for(let i = 0; i < orgList.length; i++) {
-          let org = orgList[i];
-          let n = i + 1;
-          console.log('\organization '+ n + ': ' + org.name + '\n==================================');
-          displaySingleResult(org);
-        }
-        break;
-      case 'user':
-        const userList = results[0];
-        console.log(userList.length + ' user(s)'.green + ' found:');
-        for(let i = 0; i < userList.length; i++) {
-          let user = userList[i];
-          let n = i + 1;
-          console.log('\nUser '+ n + ': ' + user.name + '\n==================================');
-          displaySingleResult(user);
-        }
-        break;
-      case 'ticket':
-        const ticketList = results[0];
-        console.log(ticketList.length + ' ticket(s)'.green + ' found:');
-        for(let i = 0; i < ticketList.length; i++) {
-          let ticket = ticketList[i];
-          let n = i + 1;
-          console.log('\nTicket ' + n + ': ' + ticket.subject + '\n======================================');
-          displaySingleResult(ticket);
-        }
-        break;
-      default:
-        exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');
+    if(results[0] === 'No data found') {
+      console.log('No data found for search.');
+      return;
+    }
+    const dataList = results[0];
+    const label = datasetLabel + '(s)';
+    console.log(dataList.length + ' ' + label.green + ' found:');
+    for(let i = 0; i < dataList.length; i++) {
+      let data = dataList[i];
+      let n = i + 1;
+      console.log('\n' + datasetLabel + ' ' + n + '\n=======================');
+      displaySingleResult(data);
     }
   }
 
@@ -156,36 +120,21 @@ function ZendeskSearch() {
         break;
       case 'ticket':
 
-        // results.push(ticketSearcher.find(field, searchValue));
-
-
-
         const ticketResults = ticketSearcher.find(field, searchValue);
 
         for(let i = 0; i < ticketResults.length; i++) {
           ticket = ticketResults[i];
           let assignedUser = userSearcher.find('_id', ticket['assignee_id']);
-          // let userAssignedTickets = [];
           if(assignedUser === 'No data found') {
             ticketAssignedUser = 'No assigned user for this ticket';
           } else {
             // assumes only one assigned user per ticket
             let u = assignedUser[0];
-            // console.log('UUUUU',u);
-            // waitForKeyPress();
             let assignedUserInfo = ['Name: ' + u['name'], 'ID: ' + u._id, 'Role: ' + u.role, 'Suspended: ' + u.suspended];
             ticket.assignedUserInfo = assignedUserInfo;
-            // for(let j = 0; j< assignedTickets.length; j++) {
-            //   userAssignedTickets.push(assignedTickets[j].subject)
-            // }
           }
-          // ticket.assignedUserInfo = ticketAssignedUser;
-
         }
         results.push(ticketResults);
-
-
-
         break;
       default:
         exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');

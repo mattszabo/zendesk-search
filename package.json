@@ -5,7 +5,7 @@
   "main": "zendeskSearch.js",
   "scripts": {
     "test": "mocha --recursive",
-    "start": "node zendeskSearch.js"
+    "start": "node index.js"
   },
   "keywords": [
     "Zendesk",

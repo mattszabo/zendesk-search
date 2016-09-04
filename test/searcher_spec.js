@@ -22,18 +22,18 @@ describe('Searcher logic', () => {
     // we accidentally mutate the data and ruin the integrity of the test
     const expectedResult = JSON.parse(JSON.stringify(organizations[0]));
     const key = '_id';
-    const searchCriteria = 101;
+    const value = 101;
 
-    const result = orgSearcher.find(key, searchCriteria);
+    const result = orgSearcher.find(key, value);
     expect(result[0]).to.deep.equal(expectedResult);
   });
 
   it('reports no data found for a legitimate search', () => {
     const expectedResult = 'No data found';
     const key = '_id';
-    const searchCriteria = -1;
+    const value = -1;
 
-    const result = orgSearcher.find(key, searchCriteria);
+    const result = orgSearcher.find(key, value);
     expect(result).to.equal(expectedResult);
   });
 
@@ -46,11 +46,21 @@ describe('Searcher logic', () => {
 
     const expectedResult = org;
     const key = 'details';
-    const searchCriteria = "";
+    const value = "";
 
-    const result = orgWithEmptyDetailsSearcher.find(key, searchCriteria);
+    const result = orgWithEmptyDetailsSearcher.find(key, value);
     expect(result[0]).to.equal(expectedResult);
 
   });
+
+  it('finds data when searching on a field that has an array of values', () => {
+    const org = JSON.parse(JSON.stringify(organizations[0]));
+    const expectedResult = org;
+    const key = 'domain_names';
+    const value = 'zentix.com';
+
+    const result = orgSearcher.find(key, value);
+    expect(result[0]).to.deep.equal(org);
+  })
 
 });

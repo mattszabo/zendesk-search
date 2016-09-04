@@ -1,104 +1,318 @@
-const inquirer = require('inquirer');
-const _ = require('lodash');
-
-const Searcher = require('./searcher');
-const organizations = require('../data/organizations.json');
-const tickets = require('../data/tickets.json');
-const users = require('../data/users.json');
-
-const orgSearcher = new Searcher(organizations);
+const read = require('readline-sync');
+const clear = require('clear');
+var colors = require('colors');
 
 function ZendeskSearch() {
+  const Searcher = require('./searcher');
+  const organizations = require('../data/organizations.json');
+  const tickets = require('../data/tickets.json');
+  const users = require('../data/users.json');
 
-  var searchOrListQuestion = [
-    {
-      type: 'rawlist',
-      name: 'option',
-      message: 'Please select one of the following options:',
-      choices: ['Zendesk Search', 'List search fields', 'Exit'],
-      filter: function(answer) {
-        // make lower case, and replace spaces with hyphens
-        let option = answer.toLowerCase().replace(/ /g, '-');
-        return option;
-      }
-    }
-  ];
+  const orgSearcher = new Searcher(organizations);
+  const ticketSearcher = new Searcher(tickets);
+  const userSearcher = new Searcher(users);
 
-  var searchQuestions = [
-    {
-      type: 'rawlist',
-      name: 'dataset',
-      message: 'What would you like to search for?',
-      choices: ['Organizations', 'Tickets', 'Users'],
-      filter: function (answer) {
-        return answer.toLowerCase();
-      }
-    },
-    {
-      type: 'input',
-      name: 'field',
-      message: 'What field would you like to search on?'
-    },
-    {
-      type: 'input',
-      name: 'searchCriteria',
-      message: 'Please enter your search value:'
-    }
-  ];
+  const header = '========================\n     Zendesk Search\n========================\n';
 
   this.run = function() {
-    console.log('===================================');
+    clear();
+
+    console.log('====================================');
     console.log('     Welcome to Zendesk Search™');
-    console.log('===================================\n');
+    console.log('====================================\n');
 
-    // searchOrListFields();
-    var readlineSync = require('readline-sync');
+    waitForKeyPress();
+    clear();
 
-    const rl = readlineSync.question('May I have your name? ');
+    let validSearch = false;
+    while(true) {
+      console.log(header);
+      console.log('Please select one of the following options:');
+      console.log(' 1) Zendesk Search');
+      console.log(' 0) Exit');
 
-    console.log('ANS', rl);
-  }
+      let option = read.question(': ');
 
-  searchOrListFields = function() {
-    inquirer.prompt(searchOrListQuestion).then(function(answer) {
-      if(answer.option === 'zendesk-search') {
-        console.log('ZS');
-        const result = searchCrawler();
-        console.log('ZS REUTN');
-        console.log(result);
-        print(result);
-      } else if (answer.option === 'list-search-fields') {
-        listSearchFields();
-        console.log('LSF');
-      } else if (answer.option === 'exit') {
-        console.log('Bye...');
-        process.exit();
+      switch(option) {
+        case '1':
+          validSelection = true;
+          const datasetLabel = getDatasetLabel();
+          // const dataset = getDatasetFromLabel(datasetLabel);
+          const field = getFieldToSearchOn(datasetLabel);
+          const searchValue = getValueToSeachOn(datasetLabel, field);
+          const results = dataCrawl(datasetLabel, field, searchValue);
+          // console.log('RESULTS in RUN', results);
+          // waitForKeyPress();
+          displaySearchResults(datasetLabel, field, searchValue, results);
+          waitForKeyPress('Press any key to return to the main menu.');
+          clear();
+          break;
+        case '0':
+          exit();
+        default:
+          handleInvalidInput(option);
       }
-    });
+    }
   }
 
-  searchCrawler = function() {
-    let result;
-    inquirer.prompt(searchQuestions).then(function(answers) {
-      // console.log('ANS', answers);
-      if(answers.dataset === 'organizations') {
-        // console.log('ORGS', answers.field, answers.searchCriteria);
-        // console.log(typeof answers.searchCriteria);
-        result = orgSearcher.find(answers.field, answers.searchCriteria);
-        // console.log('RESSSSSS', result);
+  displaySearchResults = function(datasetLabel, field, searchValue, results) {
+    clear();
+    console.log(header);
+    console.log('Searching ' + datasetLabel.green + ' for ' + field.green + ' with a value of ' + searchValue.green +'\n');
+    switch (datasetLabel) {
+      case 'organization':
+        const orgList = results[0];
+        // console.log('YOOOOOO', resu);
+        // waitForKeyPress();
+        console.log(orgList.length + ' organization(s)'.green + ' found:');
+        // displaySingleResult(org);
+        // const users = results[1];
+        // console.log('\nUsers'.green);
+        // for(let i = 0; i < users.length; i++) {
+        //   console.log('  - ' + users[i].name + ' (id: ' + users[i]._id + ')');
+        // }
+        for(let i = 0; i < orgList.length; i++) {
+          let org = orgList[i];
+          let n = i + 1;
+          console.log('\organization '+ n + ': ' + org.name + '\n==================================');
+          displaySingleResult(org);
+        }
+        break;
+      case 'user':
+        const userList = results[0];
+        console.log(userList.length + ' user(s)'.green + ' found:');
+        for(let i = 0; i < userList.length; i++) {
+          let user = userList[i];
+          let n = i + 1;
+          console.log('\nUser '+ n + ': ' + user.name + '\n==================================');
+          displaySingleResult(user);
+        }
+        break;
+      case 'ticket':
+        const ticketList = results[0];
+        console.log(ticketList.length + ' ticket(s)'.green + ' found:');
+        for(let i = 0; i < ticketList.length; i++) {
+          let ticket = ticketList[i];
+          let n = i + 1;
+          console.log('\nTicket ' + n + ': ' + ticket.subject + '\n======================================');
+          displaySingleResult(ticket);
+        }
+        break;
+      default:
+        exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');
+    }
+    // console.log(results);
+
+  }
+
+  displaySingleResult = function(result) {
+    // console.log(result);
+    for(key in result) {
+      value = result[key];
+      if(value instanceof Array) {
+        console.log(key.green + ': ');
+        for(let i = 0; i < value.length; i++) {
+          console.log('  - ' + value[i]);
+        }
+      } else {
+        console.log(key.green + ': ' + value);
       }
-    });
-    // this.print(result);
-    console.log('HEYYY');
-    return result;
+    }
   }
 
-  print = function() {
-    console.log('PRINT', result);
+  dataCrawl = function(datasetLabel, field, searchValue) {
+    let dataSearcher;
+    let results = [];
+    switch(datasetLabel) {
+      case 'organization':
+        const orgResults = orgSearcher.find(field, searchValue);
+        // results.push(orgResult);
+        // const userResult = userSearcher.find('organization_id', orgResult[0]['_id']);
+        // results.push(userResult)
+        for(let i = 0; i < orgResults.length; i++) {
+          org = orgResults[i];
+          let users = userSearcher.find('organization_id', org['_id']);
+          // console.log('YOOOOOOOOOO', users);
+          // waitForKeyPress();
+          let orgUsers = [];
+          if(users === 'No data found') {
+            orgUsers = 'No users found for the organization';
+          } else {
+            for(let j = 0; j < users.length; j++) {
+              let userRec = users[j].name + ' (id: ' + users[j]._id + ')'
+              orgUsers.push(userRec)
+            }
+          }
+          org.users = orgUsers;
+        }
+        results.push(orgResults);
+        break;
+      case 'user':
+        const userResults = userSearcher.find(field, searchValue);
+        for(let i = 0; i < userResults.length; i++) {
+          user = userResults[i];
+          // console.log('HEEYYY', user);
+          // waitForKeyPress();
+          let assignedTickets = ticketSearcher.find('assignee_id', user['_id']);
+          let userAssignedTickets = [];
+          if(assignedTickets === 'No data found') {
+            userAssignedTickets = 'No tickets assigned to user';
+          } else {
+            for(let j = 0; j< assignedTickets.length; j++) {
+              userAssignedTickets.push(assignedTickets[j].subject)
+            }
+          }
+          user.assignedTickets = userAssignedTickets;
+
+          let submittedTickets = ticketSearcher.find('submitter_id', user['_id']);
+          let userSubmittedTickets = [];
+          if(submittedTickets === 'No data found') {
+            userSubmittedTickets = 'No tickets assigned to user';
+          } else {
+            for(let j = 0; j< submittedTickets.length; j++) {
+              userSubmittedTickets.push(submittedTickets[j].subject)
+            }
+          }
+          user.submittedTickets = userSubmittedTickets;
+
+        }
+        results.push(userResults);
+        break;
+      case 'ticket':
+        results.push(ticketSearcher.find(field, searchValue));
+        break;
+      default:
+        exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');
+    }
+
+    return results;
+  }
+
+  getValueToSeachOn = function(datasetLabel, field) {
+    while(true) {
+      clear();
+      console.log(header);
+      console.log('Please type the value of the ' + datasetLabel.green + ' field ' + field.green + ' to search on.');
+      console.log('To exit the application type: \'exit\'');
+      let value = read.question('\n: ');
+      return value;
+    }
+  }
+
+  getFieldToSearchOn = function(datasetLabel) {
+    while(true) {
+      clear();
+      console.log(header);
+      console.log('Please type the name of the ' + datasetLabel.green + ' field you would like to search on.');
+      console.log('To exit the application type: \'exit\'');
+
+      let option = read.question('For a list of fields, type in the command \'--list.\'\n\n: ');
+      let validFields = getValidFieldsForDataset(datasetLabel);
+
+      if(option === '--list') {
+        displayFieldsForDataset(datasetLabel, validFields);
+        waitForKeyPress();
+      } else if (validFields.indexOf(option) >= 0) {
+        return option;
+      } else if (option === 'exit') {
+        exit();
+      } else {
+        handleInvalidInput(option);
+      }
+    }
+  }
+
+  getValidFieldsForDataset = function(datasetLabel) {
+    let validFields = [];
+    const dataset = getDatasetFromLabel(datasetLabel);
+
+    // Assumption: each dataset entry has all fields present, even if empty.
+    for( key in dataset[0] ) {
+      validFields.push(key);
+    }
+
+    return validFields;
+  }
+
+  getDatasetFromLabel = function(datasetLabel) {
+    switch(datasetLabel) {
+      case 'organization':
+        return organizations;
+      case 'user':
+        return users;
+      case 'ticket':
+        return tickets;
+      default:
+        exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');
+    }
+  }
+
+  // getDataSearcherFromLabel = function(datasetLabel) {
+  //   switch(datasetLabel) {
+  //     case 'organization':
+  //       return orgSearcher;
+  //     case 'user':
+  //       return userSearcher;
+  //     case 'ticket':
+  //       return ticketSearcher;
+  //     default:
+  //       exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetToSearchOn method.\nNow exitting application.');
+  //   }
+  // }
+
+  displayFieldsForDataset = function(datasetLabel, fieldList) {
+    clear();
+    console.log(header);
+    console.log('Displaying valid field list for ' + datasetLabel.green + ' search:');
+    for(let i = 0; i < fieldList.length; i++) {
+      console.log(' - ' + fieldList[i]);
+    }
+  }
+
+  getDatasetLabel = function() {
+    while(true) {
+      clear();
+      console.log(header);
+      console.log('Please select one of the following options:');
+      console.log(' 1) Organization Search');
+      console.log(' 2) User Search');
+      console.log(' 3) Ticket Search');
+      console.log(' 0) Exit');
+      let option = read.question(': ');
+
+      switch(option) {
+        case '1':
+          return 'organization';
+        case '2':
+          return 'user';
+        case '3':
+          return 'ticket';
+        case '0':
+          exit();
+        default:
+          handleInvalidInput(option);
+      }
+    }
+  }
+
+  exit = function(message) {
+    message = message || 'Bye :)'
+    clear();
+    console.log(message);
+    process.exit();
+  }
+
+  handleInvalidInput = function(option) {
+    console.log('Invalid option:', option);
+    waitForKeyPress('Press any key to continue and try again... ');
+    clear();
+  }
+
+  waitForKeyPress = function(message) {
+    message = message || 'Press any key to continue... ';
+    read.question(message);
   }
 
 };
-
-
 
 module.exports = ZendeskSearch;

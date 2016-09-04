@@ -5,14 +5,19 @@ function Searcher(dataset) {
     return this.dataset.length === 0;
   }
 
-  this.find = function(key, searchCriteria) {
+  this.find = function(key, value) {
     let foundData = [];
     for(let i = 0; i < this.dataset.length; i++) {
       let data = this.dataset[i];
-      for(attr in data) {
-        if(data[attr] == searchCriteria) {
-          foundData.push(data);
+      if(data[key] instanceof Array) {
+        valueList = data[key];
+        for(let j = 0; j < valueList.length; j++) {
+          if(valueList[j] == value) {
+            foundData.push(data);
+          }
         }
+      } else if (data[key] == value) {
+        foundData.push(data);
       }
     }
     if(foundData.length > 0) {

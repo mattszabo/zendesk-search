@@ -1,16 +1,22 @@
 #ZENDESK SEARCH
 
-A simple JavaScript search application
+A simple JavaScript search application that displays organization, user, and ticket information.
 
-Written with a test driven approach, it utilises mocha and chai.
+Additional information is also displayed for the following searches:
+* An organization search will also list related user info.
+* A user search will also list related ticket info.
+* A ticket search will also list the role and suspension status of the user currently assigned.
 
 ##Prerequisites
 Node.js - Installation instructions for the latest version can be found at https://nodejs.org/en/
-npm is also used for testing. This is installed as part of the Node.js package.
+Ensure all necessary packages for this app are installed by running the command:
+  `npm install`
 
 ##Instructions:
-Run with: npm start
+Run with:
+  `npm start`
 
 ##Testing:
-Install mocha and chai with: npm install
-Test with: npm run test
+Uses mocha and chai for unit tests
+Test with:
+  `npm run test`

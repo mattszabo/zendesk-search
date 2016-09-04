@@ -155,7 +155,37 @@ function ZendeskSearch() {
         results.push(userResults);
         break;
       case 'ticket':
-        results.push(ticketSearcher.find(field, searchValue));
+
+        // results.push(ticketSearcher.find(field, searchValue));
+
+
+
+        const ticketResults = ticketSearcher.find(field, searchValue);
+
+        for(let i = 0; i < ticketResults.length; i++) {
+          ticket = ticketResults[i];
+          let assignedUser = userSearcher.find('_id', ticket['assignee_id']);
+          // let userAssignedTickets = [];
+          if(assignedUser === 'No data found') {
+            ticketAssignedUser = 'No assigned user for this ticket';
+          } else {
+            // assumes only one assigned user per ticket
+            let u = assignedUser[0];
+            // console.log('UUUUU',u);
+            // waitForKeyPress();
+            let assignedUserInfo = ['Name: ' + u['name'], 'ID: ' + u._id, 'Role: ' + u.role, 'Suspended: ' + u.suspended];
+            ticket.assignedUserInfo = assignedUserInfo;
+            // for(let j = 0; j< assignedTickets.length; j++) {
+            //   userAssignedTickets.push(assignedTickets[j].subject)
+            // }
+          }
+          // ticket.assignedUserInfo = ticketAssignedUser;
+
+        }
+        results.push(ticketResults);
+
+
+
         break;
       default:
         exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');

@@ -9,6 +9,7 @@ Additional information is also displayed for the following searches:
 
 ##Prerequisites
 Node.js - Installation instructions for the latest version can be found at https://nodejs.org/en/
+
 Ensure all necessary packages for this app are installed by running the command:
   `npm install`
 

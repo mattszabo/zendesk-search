@@ -26,7 +26,6 @@ function Searcher(dataset) {
       return 'No data found';
     }
   }
-
 }
 
 module.exports = Searcher;

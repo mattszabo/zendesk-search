@@ -1,6 +1,6 @@
 const read = require('readline-sync');
 const clear = require('clear');
-var colors = require('colors');
+const colors = require('colors');
 
 function ZendeskSearch() {
   const Searcher = require('./searcher');
@@ -29,7 +29,8 @@ function ZendeskSearch() {
       const searchValue = getValueToSeachOn(datasetLabel, field);
       const results = dataCrawl(datasetLabel, field, searchValue);
       displaySearchResults(datasetLabel, field, searchValue, results);
-      waitForKeyPress('Press any key to return to the main menu.');
+      console.log("\n**********************************************\n");
+      waitForKeyPress('Press any key to return to the main menu...');
       clear();
     }
   }
@@ -59,7 +60,7 @@ function ZendeskSearch() {
       if(value instanceof Array) {
         console.log(key.green + ': ');
         for(let i = 0; i < value.length; i++) {
-          console.log('  - ' + value[i]);
+          console.log('  ' + value[i]);
         }
       } else {
         console.log(key.green + ': ' + value);
@@ -75,69 +76,59 @@ function ZendeskSearch() {
         const orgResults = orgSearcher.find(field, searchValue);
         for(let i = 0; i < orgResults.length; i++) {
           org = orgResults[i];
-          let users = userSearcher.find('organization_id', org['_id']);
-          let orgUsers = [];
-          if(users === 'No data found') {
-            orgUsers = 'No users found for the organization';
-          } else {
-            for(let j = 0; j < users.length; j++) {
-              let userRec = users[j].name + ' (id: ' + users[j]._id + ')'
-              orgUsers.push(userRec)
-            }
-          }
-          org.users = orgUsers;
+          let dataField = '_id', searchField = 'organization_id', userSummaryFields = ['name', '_id'];
+          org.users = getSummaryFromData(userSearcher, org, dataField, searchField, userSummaryFields)
         }
         results.push(orgResults);
         break;
+
       case 'user':
         const userResults = userSearcher.find(field, searchValue);
-
         for(let i = 0; i < userResults.length; i++) {
           user = userResults[i];
-          let assignedTickets = ticketSearcher.find('assignee_id', user['_id']);
-          let userAssignedTickets = [];
-          if(assignedTickets === 'No data found') {
-            userAssignedTickets = 'No tickets assigned to user';
-          } else {
-            for(let j = 0; j< assignedTickets.length; j++) {
-              userAssignedTickets.push(assignedTickets[j].subject)
-            }
-          }
-          user.assignedTickets = userAssignedTickets;
-
-          let submittedTickets = ticketSearcher.find('submitter_id', user['_id']);
-          let userSubmittedTickets = [];
-          if(submittedTickets === 'No data found') {
-            userSubmittedTickets = 'No tickets assigned to user';
-          } else {
-            for(let j = 0; j< submittedTickets.length; j++) {
-              userSubmittedTickets.push(submittedTickets[j].subject)
-            }
-          }
-          user.submittedTickets = userSubmittedTickets;
+          let dataField = '_id', ticketSummaryFields = ['subject'], searchField = 'assignee_id';
+          user.assignedTickets = getSummaryFromData(ticketSearcher, user, dataField, searchField, ticketSummaryFields);
+          searchField = 'submitter_id';
+          user.submittedTickets = getSummaryFromData(ticketSearcher, user, dataField, searchField, ticketSummaryFields);
         }
         results.push(userResults);
         break;
+
       case 'ticket':
-
         const ticketResults = ticketSearcher.find(field, searchValue);
-
         for(let i = 0; i < ticketResults.length; i++) {
           ticket = ticketResults[i];
-          let assignedUser = userSearcher.find('_id', ticket['assignee_id']);
-          if(assignedUser === 'No data found') {
-            ticketAssignedUser = 'No assigned user for this ticket';
-          } else {
-            // assumes only one assigned user per ticket
-            let u = assignedUser[0];
-            let assignedUserInfo = ['Name: ' + u['name'], 'ID: ' + u._id, 'Role: ' + u.role, 'Suspended: ' + u.suspended];
-            ticket.assignedUserInfo = assignedUserInfo;
-          }
+          let dataField = 'assignee_id', searchField = '_id', userSummaryFields = ['name', '_id', 'role', 'suspended'];
+          ticket.assignedUserInfo = getSummaryFromData(userSearcher, ticket, dataField, searchField, userSummaryFields);
         }
         results.push(ticketResults);
         break;
+
       default:
         exit('Found invalid dataset: ' + datasetLabel + '.\nPossible issue with getDatasetLabel method.\nNow exitting application.');
+    }
+    return results;
+  }
+
+  getSummaryFromData = function(searcher, data, dataField, searchField, summaryFields) {
+    let searchData = searcher.find(searchField, data[dataField]);
+    let results = [];
+    if(searchData === 'No data foud') {
+      results.push('No additional data found');
+    } else {
+      for(let i = 0; i < searchData.length; i++) {
+        let summary = '';
+        let key = summaryFields[0];
+        summary += key.green + ": " + searchData[i][key];
+        if(summaryFields.length > 1) {
+          for(let j = 1; j < summaryFields.length; j++) {
+            key = summaryFields[j];
+            summary += ", " + key.green + ": " + searchData[i][key];
+          }
+        }
+        results.push(summary);
+
+      }
     }
     return results;
   }
@@ -180,7 +171,6 @@ function ZendeskSearch() {
     let validFields = [];
     const dataset = getDatasetFromLabel(datasetLabel);
 
-    // Assumption: each dataset entry has all fields present, even if empty.
     for( key in dataset[0] ) {
       validFields.push(key);
     }
@@ -237,7 +227,7 @@ function ZendeskSearch() {
   }
 
   exit = function(message) {
-    message = message || 'Bye :)'
+    message = message || '\nBye, thankyou for using Zendesk Search :)\n'
     clear();
     console.log(message);
     process.exit();
@@ -245,12 +235,12 @@ function ZendeskSearch() {
 
   handleInvalidInput = function(option) {
     console.log('Invalid option:', option);
-    waitForKeyPress('Press any key to continue and try again... ');
+    waitForKeyPress('Press any key to continue and try again...');
     clear();
   }
 
   waitForKeyPress = function(message) {
-    message = message || 'Press any key to continue... ';
+    message = message || 'Press any key to continue...';
     read.question(message);
   }
 };

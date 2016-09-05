@@ -1,7 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-
 describe('Searcher logic', () => {
 
   const Searcher = require('../src/searcher');

@@ -37,7 +37,6 @@ describe('Searcher logic', () => {
   });
 
   it('finds data based on an empty field', () => {
-    //get a copy of the first organization and blank out its details
     const org = JSON.parse(JSON.stringify(organizations[0]));
     org.details = "";
     const orgWithEmptyDetailsData = [org];

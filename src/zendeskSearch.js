@@ -111,26 +111,25 @@ function ZendeskSearch() {
   }
 
   getSummaryFromData = function(searcher, data, dataField, searchField, summaryFields) {
-    let searchData = searcher.find(searchField, data[dataField]);
-    let results = [];
-    if(searchData === 'No data foud') {
-      results.push('No additional data found');
+    let searchResults = searcher.find(searchField, data[dataField]);
+    let summaryData = [];
+    if(searchResults === 'No data foud') {
+      summaryData.push('No additional data found');
     } else {
-      for(let i = 0; i < searchData.length; i++) {
+      for(let i = 0; i < searchResults.length; i++) {
         let summary = '';
         let key = summaryFields[0];
-        summary += key.green + ": " + searchData[i][key];
+        summary += key.green + ": " + searchResults[i][key];
         if(summaryFields.length > 1) {
           for(let j = 1; j < summaryFields.length; j++) {
             key = summaryFields[j];
-            summary += ", " + key.green + ": " + searchData[i][key];
+            summary += ", " + key.green + ": " + searchResults[i][key];
           }
         }
-        results.push(summary);
-
+        summaryData.push(summary);
       }
     }
-    return results;
+    return summaryData;
   }
 
   getValueToSeachOn = function(datasetLabel, field) {
@@ -227,7 +226,7 @@ function ZendeskSearch() {
   }
 
   exit = function(message) {
-    message = message || '\nBye, thankyou for using Zendesk Search :)\n'
+    message = message || 'Bye, thankyou for using Zendesk Search :)\n'
     clear();
     console.log(message);
     process.exit();

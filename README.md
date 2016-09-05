@@ -10,10 +10,15 @@ Additional information is also displayed for the following searches:
 ##Prerequisites
 Node.js - Installation instructions for the latest version can be found at https://nodejs.org/en/
 
-Ensure all necessary packages for this app are installed by running the command:
-  `npm install`
+##Installation instructions
+From the command line, type the following:
+```
+git clone https://github.com/wekilledit/zendesk-search.git zendesk-search
+cd zendesk-search
+npm install
+```
 
-##Instructions:
+##Running the app:
 Run with:
   `npm start`
 
